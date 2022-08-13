@@ -22,7 +22,7 @@ def get_weather():
   url = "http://autodev.openspeech.cn/csp/api/v2.1/weather?openId=aiuicus&clientType=android&sign=android&city=" + city
   res = requests.get(url).json()
   weather = res['data']['list'][0]
-  return weather['weather'], math.floor(weather['temp'])
+  return weather['weather'], math.floor(weather['temp']), math.floor(weather['low']), math.floor(weather['high']), math.floor(weather['windLevel'])
 
 def get_count():
   delta = today - datetime.strptime(start_date, "%Y-%m-%d")
@@ -40,6 +40,12 @@ def get_words():
     return get_words()
   return words.json()['data']['text']
 
+def get_jinju():
+  jinju = requests.get("https://api.shadiao.pro/pyq")
+  if jinju.status_code != 200:
+    return get_jinju()
+  return jinju.json()['data']['text']
+
 def get_random_color():
   return "#%06x" % random.randint(0, 0xFFFFFF)
 
@@ -47,7 +53,7 @@ def get_random_color():
 client = WeChatClient(app_id, app_secret)
 
 wm = WeChatMessage(client)
-wea, temperature = get_weather()
-data = {"weather":{"value":wea},"temperature":{"value":temperature},"love_days":{"value":get_count()},"birthday_left":{"value":get_birthday()},"words":{"value":get_words(), "color":get_random_color()}}
+wea, temperature, low, high, windLevel = get_weather()
+data = {"weather":{"value":wea, "color":get_random_color()},"temperature":{"value":temperature, "color":get_random_color()},"low":{"value":low, "color":get_random_color()},"high":{"value":high, "color":get_random_color()},"windLevel":{"value":windLevel, "color":get_random_color()},"love_days":{"value":get_count(), "color":get_random_color()},"birthday_left":{"value":get_birthday(), "color":get_random_color()},"words":{"value":get_words(), "color":get_random_color()},"jinju":{"value":get_jinju(), "color":get_random_color()}}
 res = wm.send_template(user_id, template_id, data)
 print(res)
